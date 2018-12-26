@@ -1,0 +1,28 @@
+import pymysql
+import numpy as np
+from datetime import datetime
+from pyquery import PyQuery as pq
+db =pymysql.connect( host = 'localhost' , port=8889, user = 'root' ,  passwd = '12345678' ,  db = 'currency' )
+cursor = db.cursor()
+
+from sqlalchemy import create_engine,Table,Column,Integer,String,MetaData,ForeignKey
+engine = create_engine("mysql+pymysql://root:usbw@localhost:3307/test?charset=utf8")
+ex_url = "https://www.hk.dbs.com/ecPortalWeb/Rates/ExchangeRate.aspx?Lang=en-us"
+currency_css = ".table-header+ .indent-inner .acct-column"
+html_doc = pq(ex_url)
+currency = html_doc(currency_css).text()
+HKDbuyrate_css = ".table-header+ .indent-inner .acct-column+ .right-spacing"
+html_doc = pq(ex_url)
+HKDbuyrate = html_doc(HKDbuyrate_css).text()
+HKDsellrate_css = ".table-header+ .indent-inner .right-spacing:nth-child(3)"
+html_doc = pq(ex_url)
+HKDsellrate = html_doc(HKDsellrate_css).text()
+date_css = "#lblLastUpdate"
+html_doc = pq(ex_url)
+date = html_doc(date_css).text()
+
+df = currency,HKDbuyrate,HKDsellrate,date
+sql ="insert into currency(currency,HKDbuyrate,HKDsellrate,date) values(%s,%s,%s,%s)"
+cursor.execute(sql,df)
+db.commit()
+db.close()
